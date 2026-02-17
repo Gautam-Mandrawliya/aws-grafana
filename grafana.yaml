@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS Managed Grafana workspace with CloudWatch integration.'
+Parameters:
+ WorkspaceName:
+   Type: String
+   Default: 'GrafanaWorkspaceProject'
+   Description: 'Name of the Grafana workspace.'
+Resources:
+  GrafanaWorkspace:
+    Type: AWS::Grafana::Workspace
+    Properties:
+      AccountAccessType: CURRENT_ACCOUNT
+      AuthenticationProviders:
+        - AWS_SSO
+        - SAML
+      PermissionType: SERVICE_MANAGED
+      RoleArn: !GetAtt GrafanaRole.Arn
+
+  GrafanaWorkspaceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: grafana.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - PolicyName: GrafanaCloudWatchAccess
+          arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
+      Policies:
+        - PolicyName: GrafanaSNSPublish
+          PolicyDocument:
+            Statement:
+             - Effect: Allow
+               Action:
+                 - sns:Publish
+               Resources: arn:aws:sns:us-east-1:677276086106:grafana-alert-topic
+            
