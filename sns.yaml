@@ -1,0 +1,5 @@
+Resources:
+  AlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: grafana-alert-topic
